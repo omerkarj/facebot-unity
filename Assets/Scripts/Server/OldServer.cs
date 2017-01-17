@@ -9,9 +9,9 @@ using System.Threading;
 public class OldServer : MonoBehaviour {
 
 	private enum Phases {
-		PHASE_1_DRAW, 
-		PHASE_2_PLAY, 
-		PHASE_3_SELECT
+		PHASE_0_DRAW, 
+		PHASE_1_PLAY, 
+		PHASE_2_SELECT
 	}
 
 	// State object for reading client data asynchronously
@@ -104,7 +104,7 @@ public class OldServer : MonoBehaviour {
 	}
 
 	public void AcceptCallback(IAsyncResult result) {
-		Debug.Log("Accept callback");
+//		Debug.Log("Accept callback");
 
 		// Signal the main thread to continue.
 		allDone.Set();
@@ -128,7 +128,7 @@ public class OldServer : MonoBehaviour {
 	}
 
 	public void ReadCallback(IAsyncResult result) {
-		Debug.Log("Read callback");
+//		Debug.Log("Read callback");
 
 		String content = String.Empty;
 
@@ -149,32 +149,36 @@ public class OldServer : MonoBehaviour {
 			if (content.IndexOf ("<NEXT>") > -1) {
 				Debug.Log ("NEXT");
 
-				if ((Phases)status == Phases.PHASE_1_DRAW) {
+				if ((Phases)status == Phases.PHASE_0_DRAW) {
 					string[] toSend = content.Split (new string[] { "<EOL>" }, StringSplitOptions.None);
 					state.sb.Remove (0, state.sb.Length);
 
-					Debug.Log (string.Format ("drawing {0} lines from socket. \n Data : {1}", toSend.Length, toSend));
+//					Debug.Log (string.Format ("drawing {0} lines from socket. \n Data : {1}", toSend.Length, toSend));
 
-					//				clientDataService.ClearLines ();
+					clientDataService.ClearLines ();
 
 					foreach (string line in toSend) {
 						Debug.Log ("line");
 						clientDataService.DrawCompleteLineFromString (line);
 					}
 				}
-					
-				byte[] currentFrame = clientDataService.GetCurrentFrameAsString ();
-				Send(handler, currentFrame);
-
 			} else if (content.IndexOf ("<PHASE>") > -1) {
-				status++;
+				status = (status + 1) % Enum.GetNames (typeof(Phases)).Length;
 
-				if ((Phases)status == Phases.PHASE_2_PLAY) {
-					clientDataService.Play ();
+				switch ((Phases)status) {
+					case Phases.PHASE_0_DRAW:
+						clientDataService.Stop ();
+						break;
+					case Phases.PHASE_1_PLAY:
+						clientDataService.Play ();
+						break;
+					case Phases.PHASE_2_SELECT:
+						clientDataService.Stop ();
+						break;
 				} 
-				else if ((Phases)status == Phases.PHASE_3_SELECT) {
-					clientDataService.Stop ();
-				}
+
+			} else if (content.IndexOf ("<RESET>") > -1) {
+				clientDataService.Reset ();	
 
 			} else if (content.IndexOf ("<QUIT>") > -1) {
 				// Closing connection
@@ -194,12 +198,15 @@ public class OldServer : MonoBehaviour {
 					state
 				);
 			}
+
+			byte[] currentFrame = clientDataService.GetCurrentFrameAsByteArray ();
+			Send(handler, currentFrame);
 		}
 	}
 
 	private void Send(Socket handler, byte[] data) {
-		Debug.Log("Send");
-		Debug.Log(string.Format("Sending {0}", Convert.ToBase64String(data)));
+//		Debug.Log("Send");
+//		Debug.Log(string.Format("Sending {0}", Convert.ToBase64String(data)));
 		// Begin sending the data to the remote device.
 		handler.BeginSend(
 			data, 
@@ -212,7 +219,7 @@ public class OldServer : MonoBehaviour {
 	}
 
 	private void SendCallback(IAsyncResult ar) {
-		Debug.Log("Send callback");
+//		Debug.Log("Send callback");
 
 		try {
 			// Retrieve the socket from the state object.
@@ -220,7 +227,7 @@ public class OldServer : MonoBehaviour {
 
 			// Complete sending the data to the remote device.
 			int bytesSent = handler.EndSend(ar);
-			Debug.Log(string.Format("Sent {0} bytes to client.", bytesSent));
+//			Debug.Log(string.Format("Sent {0} bytes to client.", bytesSent));
 
 //			handler.Shutdown(SocketShutdown.Both);
 //			handler.Close();

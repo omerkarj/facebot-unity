@@ -29,14 +29,18 @@ public class DrawLineService : MonoBehaviour {
 		}
 
 		if (pointsList != null) {
-			List<Vector2> pointsInWorldList = new List<Vector2> ();
-			foreach (Vector2 point in pointsList) 
-			{
-				Vector2 pointInWorld = convertToWorldPoint (point);
-				pointsInWorldList.Add (pointInWorld);
-			}
+			if (pointsList.Count == 1 && pointsList [0] == Vector2.zero) {
+				ClearLines ();
+			} 
+			else {
+				List<Vector2> pointsInWorldList = new List<Vector2> ();
+				foreach (Vector2 point in pointsList) {
+					Vector2 pointInWorld = convertToWorldPoint (point);
+					pointsInWorldList.Add (pointInWorld);
+				}
 
-			CreateNewLine (pointsInWorldList);
+				CreateNewLine (pointsInWorldList);
+			}
 		}
 	}
 
@@ -60,7 +64,7 @@ public class DrawLineService : MonoBehaviour {
 		drawLineScript.DrawCompleteStroke (pointsList);
 	}
 
-	public void ClearLines ()
+	private void ClearLines ()
 	{
 		GameObject[] lines = GameObject.FindGameObjectsWithTag (LINE_TAG);
 		foreach (GameObject line in lines) {

@@ -32,9 +32,8 @@ public class ScreenCapture : MonoBehaviour {
 		screenShot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
 
 		byte[] encoded = screenShot.EncodeToPNG ();
-//		clientDataService.encodedScreenshot = encoded;
 		clientDataService.encodedScreenshot = Encoding.ASCII.GetBytes(Convert.ToBase64String(encoded) + "<EOF>");
-		Debug.Log ("============ encoded screenshot: " + Convert.ToBase64String(encoded));
+//		Debug.Log ("============ encoded screenshot: " + Convert.ToBase64String(encoded));
 	}
 
 	void OnApplicationQuit()
