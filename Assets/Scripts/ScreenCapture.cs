@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// saves each game frame as and encoded PNG string instead of rendering it
 public class ScreenCapture : MonoBehaviour {
 
 	private Camera mainCamera;
@@ -14,7 +15,6 @@ public class ScreenCapture : MonoBehaviour {
 
 	private ClientDataService clientDataService;
 
-	// Use this for initialization
 	void Start () {
 		mainCamera = GetComponent<Camera>();
 		textureTarget = new RenderTexture(width, height, 24);
@@ -25,16 +25,12 @@ public class ScreenCapture : MonoBehaviour {
 		RenderTexture.active = textureTarget;
 	}
 
-	// TODO: register to OnLineDrawn event, wait till end of frame and capture instead of every frame.
-
 	void OnPostRender()
 	{
 		screenShot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
 
 		byte[] encoded = screenShot.EncodeToPNG ();
-//		clientDataService.encodedScreenshot = encoded;
 		clientDataService.encodedScreenshot = Encoding.ASCII.GetBytes(Convert.ToBase64String(encoded) + "<EOF>");
-		Debug.Log ("============ encoded screenshot: " + Convert.ToBase64String(encoded));
 	}
 
 	void OnApplicationQuit()

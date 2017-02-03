@@ -11,29 +11,14 @@ public class ClientDataService : MonoBehaviour {
 
 	private DrawLineService drawLineService;
 	private PlayerController playerController;
-
-//	public void DrawLineToPointFromString(string pointString)
-//	{
-//		Vector2 point = null;
-//		Match m = new Regex (@"\((\d+),(\d+)\)").Match (pointString);
-//
-//		if (m.Success) {
-//			int x = int.Parse(m.Groups[1].ToString());
-//			int y = int.Parse(m.Groups[2].ToString());
-//			point = new Vector2 (x, y);
-//		}
-//
-//		if (point != null) {
-//			DrawLine drawLineScript = DrawLineService.Lines [0].GetComponent<DrawLine> ();
-//			drawLineScript.DrawSegmentToPoint (point);
-//			Debug.Log ("new point: " + point);
-//		}
-//	}
+	public readonly List<Vector2> CLEAR_LINES = new List<Vector2> (1);
 
 	void Start() 
 	{
 		drawLineService = GetComponent<DrawLineService> ();
 		playerController = GameObject.FindGameObjectWithTag ("Player").GetComponent<PlayerController> ();
+
+		CLEAR_LINES.Add (Vector2.zero);
 	}
 
 	public void DrawCompleteLineFromString(string pointString)
@@ -45,7 +30,6 @@ public class ClientDataService : MonoBehaviour {
 			int x = int.Parse(m.Groups[1].ToString());
 			int y = int.Parse(m.Groups[2].ToString());
 			pointsList.Add(new Vector2(x, y));
-			Debug.Log (string.Format("Added {0},{1} to points list", x, y));
 			m = m.NextMatch ();
 		}
 
@@ -56,7 +40,7 @@ public class ClientDataService : MonoBehaviour {
 
 	public void ClearLines()
 	{
-		drawLineService.ClearLines ();
+		drawLineService.AddToLineCreationQueue (CLEAR_LINES);
 	}
 
 	public void Play() {
@@ -67,7 +51,11 @@ public class ClientDataService : MonoBehaviour {
 		playerController.Stop ();
 	}
 
-	public byte[] GetCurrentFrameAsString () {
+	public void Reset() {
+		playerController.ResetPosition ();
+	}
+
+	public byte[] GetCurrentFrameAsByteArray () {
 		return encodedScreenshot;
 	}
 }
