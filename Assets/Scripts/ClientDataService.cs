@@ -30,7 +30,6 @@ public class ClientDataService : MonoBehaviour {
 			int x = int.Parse(m.Groups[1].ToString());
 			int y = int.Parse(m.Groups[2].ToString());
 			pointsList.Add(new Vector2(x, y));
-//			Debug.Log (string.Format("Added {0},{1} to points list", x, y));
 			m = m.NextMatch ();
 		}
 
